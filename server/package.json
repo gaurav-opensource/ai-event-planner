@@ -1,14 +1,12 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
+  "description": "AI Event Planner Backend",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
+  "author": "Gaurav Yadav",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
