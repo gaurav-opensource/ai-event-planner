@@ -16,7 +16,7 @@ connectDB();
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5173", // your Vite frontend
+  origin: "https://ai-event-planner-tawny.vercel.app", // your Vite frontend
   credentials: true
 }));
 
