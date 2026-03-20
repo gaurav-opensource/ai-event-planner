@@ -7,8 +7,10 @@ import { createEvent, getEvents } from "../services/api";
 
 const Home = () => {
   const [events, setEvents] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(true); // ✅ NEW
+  const [showSidebar, setShowSidebar] = useState(true);
 
   useEffect(() => {
     fetchEvents();
@@ -19,44 +21,58 @@ const Home = () => {
       const res = await getEvents();
       setEvents(res.data);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to fetch events:", err.message);
     }
   };
 
   const handleSubmit = async (prompt) => {
     try {
       setLoading(true);
-      const res = await createEvent({ prompt });
 
-      // Add new event at top
-      setEvents((prev) => [res.data, ...prev]);
+      const res = await createEvent({ prompt });
+      const newEvent = res.data;
+
+      // update history
+      setEvents((prev) => [newEvent, ...prev]);
+
+      // show latest result
+      setSelectedEvent(newEvent);
+      setSelectedId(newEvent._id);
     } catch (err) {
-      console.log(err);
+      console.error("Create event failed:", err.message);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSelect = (event) => {
+    setSelectedEvent(event);
+    setSelectedId(event._id);
+  };
+
   return (
     <div className="container">
-
-      {/* Sidebar */}
-      <div className={`sidebar ${!showSidebar ? "hidden" : ""}`}>
+      
+      {/* sidebar */}
+      <aside className={`sidebar ${!showSidebar ? "hidden" : ""}`}>
         <h2 className="sidebar-title">History</h2>
-        <SearchHistory events={events} />
-      </div>
 
-      {/* Main Section */}
-      <div className="main">
+        <SearchHistory
+          events={events}
+          onSelect={handleSelect}
+          selectedId={selectedId}
+        />
+      </aside>
 
-        {/* Header */}
+      {/* main content */}
+      <main className="main">
+
+        {/* header */}
         <div className="header">
-
-          {/* Left side (menu + title) */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="header-left">
             <span
               className="menu-btn"
-              onClick={() => setShowSidebar(!showSidebar)}
+              onClick={() => setShowSidebar((prev) => !prev)}
             >
               ☰
             </span>
@@ -64,34 +80,33 @@ const Home = () => {
             <h1>AI Event Concierge</h1>
           </div>
 
-          {/* Right side (profile) */}
           <div className="profile">
             <span>Gaurav</span>
-            <div className="avatar"></div>
+            <div className="avatar">G</div>
           </div>
         </div>
 
-        {/* Results */}
+        {/* results */}
         <div className="results">
           {loading && <Loader />}
 
-          {!loading && events.length === 0 && (
+          {!loading && !selectedEvent && (
             <p className="empty-text">
-              Start by describing your event...
+              Start by describing your event or pick something from history.
             </p>
           )}
 
-          {!loading &&
-            events.map((event) => (
-              <EventCard key={event._id || event.id} event={event} />
-            ))}
+          {!loading && selectedEvent && (
+            <EventCard event={selectedEvent} />
+          )}
         </div>
 
-        {/* Input */}
+        {/* input */}
         <div className="input-box">
           <EventForm onSubmit={handleSubmit} />
         </div>
-      </div>
+
+      </main>
     </div>
   );
 };

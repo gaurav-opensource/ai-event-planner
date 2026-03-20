@@ -1,26 +1,28 @@
 import React, { useState } from "react";
 
-
 const EventForm = ({ onSubmit }) => {
-  const [input, setInput] = useState("");
+  const [query, setQuery] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
 
-    onSubmit(input);
-    setInput("");
+    const trimmedValue = query.trim();
+    if (!trimmedValue) return;
+
+    onSubmit(trimmedValue);
+    setQuery("");
   };
 
   return (
     <form onSubmit={handleSubmit} className="form">
       <input
         type="text"
-        placeholder="Describe your event..."
+        placeholder="Describe your event (e.g. team outing for 20 people in Goa)..."
         className="input"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
       />
+
       <button type="submit" className="button">
         Generate
       </button>

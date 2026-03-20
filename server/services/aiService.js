@@ -1,69 +1,77 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-require("dotenv").config(); 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-console.log("API KEY:", process.env.GEMINI_API_KEY);
+require("dotenv").config();
 
-const generateEvent = async (prompt) => {
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// NOTE: might move this to config later
+const MODEL_NAME = "gemini-2.5-flash";
+
+const generateEvent = async (userPrompt) => {
   try {
+    if (!userPrompt || userPrompt.trim() === "") {
+      throw new Error("Prompt is missing");
+    }
+
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: MODEL_NAME,
     });
 
-    const result = await model.generateContent(`
-        You are an AI Event Planner.
+    const finalPrompt = `
+      You are an AI Event Planner.
 
-        STRICT RULES:
-        - Return ONLY valid JSON
-        - No markdown
-        - No explanation
+      Return ONLY valid JSON.
+      Do not include markdown or explanations.
 
-        Format:
-        {
+      Format:
+      {
         "venueName": "",
         "location": "",
         "cost": "",
         "justification": ""
-        }
+      }
 
-        User request:
-        ${prompt}
-    `);
+      User request:
+      ${userPrompt}
+      `;
 
-    let text = result.response.text();
+    const result = await model.generateContent(finalPrompt);
 
-    // ✅ Clean response (same as your working logic)
-    text = text.replace(/```json|```/g, "").trim();
+    let rawText = result.response.text();
 
-    let parsed;
-    console.log("Raw AI Response:", text);
+    // sometimes Gemini wraps response in markdown
+    rawText = rawText.replace(/```json|```/g, "").trim();
+
+    let data;
 
     try {
-      parsed = JSON.parse(text);
-    } catch (err) {
-      console.log("⚠️ JSON parse failed, returning raw");
+      data = JSON.parse(rawText);
+    } catch (parseErr) {
+      console.warn("JSON parse failed, using fallback response");
 
-      // fallback if JSON breaks
-      parsed = {
-        venueName: "AI Generated Venue",
+      // fallback if AI gives broken JSON
+      data = {
+        venueName: "Suggested Venue",
         location: "India",
-        cost: "$3000",
-        justification: text, // raw text show kar dena
+        cost: "₹2-3 Lakhs",
+        justification: rawText,
       };
     }
 
-    return parsed;
+    return data;
+  } catch (err) {
+    console.error("generateEvent error:", err.message);
 
-  } catch (error) {
-    console.error("AI Error:", error);
-
-    // ✅ Final fallback (no crash)
+    // final fallback (never break API)
     return {
-      venueName: "Premium Conference Resort",
+      venueName: "Corporate Retreat Resort",
       location: "Manali, India",
-      cost: "$3500",
-      justification: "Ideal for team retreats with scenic views and budget fit.",
+      cost: "₹3.5 Lakhs",
+      justification:
+        "Good for team offsites with scenic environment and all facilities.",
     };
   }
 };
+
+
 
 module.exports = { generateEvent };

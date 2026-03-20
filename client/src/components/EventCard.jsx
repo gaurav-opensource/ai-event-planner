@@ -1,27 +1,43 @@
 const EventCard = ({ event }) => {
-  console.log("Rendering EventCard with event:", event);
+  if (!event) return null;
+
+  const {
+    prompt,
+    venueName,
+    location,
+    cost,
+    justification,
+  } = event;
 
   return (
-    <div className="card">
-
-      {/* USER PROMPT */}
-      <div className="user-query">
-        <p className="label">🧑 You:</p>
-        <p className="prompt">{event.prompt}</p>
+    <div className="chat-container">
+      
+      {/* user message */}
+      <div className="chat-row user">
+        <div className="chat-bubble user-bubble">
+          {prompt}
+        </div>
       </div>
 
-      {/* AI RESPONSE */}
-      <div className="ai-response">
-        <p className="label">🤖 AI Suggestion:</p>
+      {/* ai response */}
+      <div className="chat-row ai">
+        <div className="chat-bubble ai-bubble">
+          <p className="ai-title">🤖 AI Suggestion</p>
 
-        <h2 className="card-title">{event.venueName}</h2>
+          <h3 className="venue-name">{venueName}</h3>
 
-        <p className="card-text">📍 {event.location}</p>
-        <p className="card-text">💰 {event.cost}</p>
+          <p className="meta">
+            📍 {location}
+          </p>
 
-        <p className="card-desc">
-          💡 {event.justification}
-        </p>
+          <p className="meta">
+            💰 {cost}
+          </p>
+
+          <p className="ai-desc">
+            💡 {justification}
+          </p>
+        </div>
       </div>
 
     </div>

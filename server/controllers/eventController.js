@@ -1,35 +1,48 @@
 const Event = require("../models/Event_history");
 const { generateEvent } = require("../services/aiService");
 
-// Create Event
+// Create a new event using AI
 const createEvent = async (req, res) => {
   try {
     const { prompt } = req.body;
-    console.log("REQ BODY:", req.body);
 
-    // Call AI
-    const aiData = await generateEvent(prompt);
-    console.log("AI DATA:", aiData);
+    if (!prompt || prompt.trim() === "") {
+      return res.status(400).json({
+        message: "Please provide an event description",
+      });
+    }
 
-    // Save in DB
-    const newEvent = await Event.create({
+    // calling AI service
+    const aiResponse = await generateEvent(prompt);
+
+    // saving event in DB
+    const savedEvent = await Event.create({
       prompt,
-      ...aiData,
+      ...aiResponse,
     });
 
-    res.status(201).json(newEvent);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(201).json(savedEvent);
+  } catch (err) {
+    console.error("Create Event Error:", err.message);
+
+    return res.status(500).json({
+      message: "Failed to create event",
+    });
   }
 };
 
-// Get all events
+// Fetch all events (latest first)
 const getEvents = async (req, res) => {
   try {
     const events = await Event.find().sort({ createdAt: -1 });
-    res.json(events);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    return res.json(events);
+  } catch (err) {
+    console.error("Fetch Events Error:", err.message);
+
+    return res.status(500).json({
+      message: "Could not fetch events",
+    });
   }
 };
 
