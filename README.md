@@ -1,4 +1,4 @@
-````md
+
 # AI Event Concierge
 
 A small project I built to generate event/venue suggestions using AI.  
@@ -140,4 +140,4 @@ Gaurav Yadav
 (MERN + a bit of AI stuff)
 
 
-````
+
